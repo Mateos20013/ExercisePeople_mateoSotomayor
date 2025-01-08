@@ -1,98 +1,70 @@
 ﻿using People.Models;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+using System.Windows.Input;
 
-namespace People.ViewModels;
-
-public class MainPageViewModel : BaseViewModel
+namespace People.ViewModels
 {
-    public ObservableCollection<Person> PeopleList { get; set; } = new ObservableCollection<Person>();
-    private readonly PersonRepository _repository;
-
-    public Command AddPersonCommand { get; }
-    public Command<Person> DeletePersonCommand { get; }
-
-    private string _newPersonName;
-    public string NewPersonName
+    public class MainPageViewModel : BaseViewModel
     {
-        get => _newPersonName;
-        set => SetProperty(ref _newPersonName, value); // Usa SetProperty del BaseViewModel
-    }
+        private readonly PersonRepository _personRepo;
 
-    // Constructor con parámetro (usado por MauiProgram.cs)
-    public MainPageViewModel(string dbPath)
-    {
-        _repository = new PersonRepository(dbPath);
+        public ObservableCollection<Person> People { get; set; }
 
-        AddPersonCommand = new Command(async () => await AddPerson());
-        DeletePersonCommand = new Command<Person>(async (person) => await DeletePerson(person));
-    }
-
-    // Constructor predeterminado (necesario para soporte XAML)
-    public MainPageViewModel() : this(Path.Combine(FileSystem.AppDataDirectory, "people.db3"))
-    {
-    }
-
-    // Cargar la lista de personas
-    public async Task LoadPeople()
-    {
-        var people = await _repository.GetAllPeople();
-        PeopleList.Clear();
-        foreach (var person in people)
+        private string _newPersonName;
+        public string NewPersonName
         {
-            PeopleList.Add(person);
-        }
-    }
-
-    // Agregar una nueva persona
-    private async Task AddPerson()
-    {
-        if (string.IsNullOrWhiteSpace(NewPersonName))
-        {
-            await App.Current.MainPage.DisplayAlert("Error", "El nombre no puede estar vacío.", "OK");
-            return;
-        }
-
-        try
-        {
-            await _repository.AddNewPerson(NewPersonName);
-            NewPersonName = string.Empty;
-            await LoadPeople();
-        }
-        catch (Exception ex)
-        {
-            await App.Current.MainPage.DisplayAlert("Error", $"No se pudo agregar la persona: {ex.Message}", "OK");
-        }
-    }
-
-    // Eliminar una persona
-    private async Task DeletePerson(Person person)
-    {
-        if (person == null)
-            return;
-
-        bool isConfirmed = await App.Current.MainPage.DisplayAlert(
-            "Confirmar Eliminación",
-            $"¿Estás seguro de que deseas eliminar a {person.Name}?",
-            "Sí",
-            "No");
-
-        if (isConfirmed)
-        {
-            try
+            get => _newPersonName;
+            set
             {
-                await _repository.DeletePerson(person);
-                await LoadPeople();
-
-                // Mensaje de eliminación
-                await App.Current.MainPage.DisplayAlert(
-                    "Registro Eliminado",
-                    $"Mateo Sotomayor acaba de eliminar a {person.Name}.",
-                    "OK");
+                _newPersonName = value;
+                OnPropertyChanged(nameof(NewPersonName));
             }
-            catch (Exception ex)
+        }
+
+        public ICommand AddPersonCommand { get; }
+        public ICommand DeletePersonCommand { get; }
+        // Constructor sin parámetros
+        public MainPageViewModel() : this(new PersonRepository())
+        {
+        }
+
+        public MainPageViewModel(PersonRepository personRepo)
+        {
+            _personRepo = personRepo;
+            People = new ObservableCollection<Person>();
+            AddPersonCommand = new Command(async () => await AddPerson());
+            DeletePersonCommand = new Command<Person>(async person => await DeletePerson(person));
+            LoadPeople();
+        }
+
+        private async void LoadPeople()
+        {
+            var people = await _personRepo.GetAllPeople();
+            People.Clear();
+            foreach (var person in people)
+                People.Add(person);
+        }
+
+        private async Task AddPerson()
+        {
+            if (!string.IsNullOrWhiteSpace(NewPersonName))
             {
-                await App.Current.MainPage.DisplayAlert("Error", $"No se pudo eliminar a la persona: {ex.Message}", "OK");
+                await _personRepo.AddNewPerson(NewPersonName);
+                LoadPeople();
+                NewPersonName = string.Empty;
+            }
+        }
+
+        private async Task DeletePerson(Person person)
+        {
+            if (person != null)
+            {
+                await _personRepo.DeletePerson(person.Id);
+                LoadPeople();
+                await App.Current.MainPage.DisplayAlert(
+                "Registro Eliminado",
+                $"Mateo Sotomayor acaba de eliminar a {person.Name}.",
+                "OK");
             }
         }
     }

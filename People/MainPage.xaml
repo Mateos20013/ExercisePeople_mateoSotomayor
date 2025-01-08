@@ -4,7 +4,7 @@
              xmlns:vm="clr-namespace:People.ViewModels"
              x:Class="People.MainPage"
              Title="Mateo Sotomayor"
-             BackgroundColor="#e3f2fd">
+             BackgroundColor="#f4f6f9">
 
     <ContentPage.BindingContext>
         <vm:MainPageViewModel />
@@ -15,67 +15,77 @@
         <VerticalStackLayout Padding="20" Spacing="15">
             <!-- Header -->
             <Label Text="Mateo Sotomayor" 
-               FontSize="28" 
+               FontSize="32" 
                FontAttributes="Bold" 
                TextColor="Black"
                HorizontalOptions="Center" />
-            <Label Text="App para agregar Personas" 
-               FontSize="22" 
-               FontAttributes="Bold" 
-               TextColor="Black"
+            <Label Text="App para Agregar Personas" 
+               FontSize="18" 
+               FontAttributes="Italic" 
+               TextColor="Gray"
                HorizontalOptions="Center" />
 
-            <!-- Card -->
-            <Frame Padding="15" 
-                   Margin="0,10" 
-                   CornerRadius="20" 
-                   BackgroundColor="#bbdefb"
-                   BorderColor="#90caf9"
-                   HasShadow="True">
-                <StackLayout>
-                    <Label Text="Mateo Sotomayor" 
-                           FontSize="20" 
-                           FontAttributes="Bold" 
-                           TextColor="Black"
-                           HorizontalOptions="Center" />
-                    <Label Text="Edad: 22" 
-                           FontSize="16" 
-                           TextColor="Black"
-                           HorizontalOptions="Center" />
-                    <Image Source="dotnet_bot" 
-                           HeightRequest="200" 
-                           WidthRequest="200" 
-                           HorizontalOptions="Center" 
-                           Aspect="AspectFill" />
-                </StackLayout>
-            </Frame>
+            <!-- Carousel for Profile Image -->
+            <CarouselView>
+                <CarouselView.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>mateoxd.jpg</x:String>
+                        <x:String>mateo2.jpg</x:String>
+                        <!-- Puedes agregar más imágenes si lo deseas -->
+                    </x:Array>
+                </CarouselView.ItemsSource>
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <Image Source="{Binding .}" 
+                               HeightRequest="200" 
+                               WidthRequest="200" 
+                               Aspect="AspectFill" 
+                               HorizontalOptions="Center" />
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+
+            <!-- Profile Information -->
+            <Label Text="Mateo Sotomayor" 
+                   FontSize="22" 
+                   FontAttributes="Bold" 
+                   TextColor="Black" 
+                   HorizontalOptions="Center" />
+            <Label Text="Edad: 22" 
+                   FontSize="16" 
+                   TextColor="Black" 
+                   HorizontalOptions="Center" />
 
             <!-- Add Person Section -->
-            <Frame Padding="10" Margin="0,10" CornerRadius="15" BackgroundColor="#e3f2fd" BorderColor="#90caf9">
-                <StackLayout Spacing="10">
+            <Frame Padding="20" Margin="0,10" CornerRadius="15" BackgroundColor="#ffffff" BorderColor="#90caf9" HasShadow="True">
+                <StackLayout Spacing="15">
                     <Label Text="Agregar Nueva Persona" 
                            FontSize="18" 
                            FontAttributes="Bold" 
-                           TextColor="Black" />
+                           TextColor="Black" 
+                           HorizontalOptions="Center" />
                     <Entry Placeholder="Ingresa el nombre" 
                            Text="{Binding NewPersonName}" 
                            BackgroundColor="White" 
                            PlaceholderColor="Gray"
-                           TextColor="Black" />
+                           TextColor="Black" 
+                           HorizontalOptions="FillAndExpand" />
                     <Button Text="Agregar Persona" 
                             Command="{Binding AddPersonCommand}" 
                             BackgroundColor="#1e88e5" 
                             TextColor="White" 
                             CornerRadius="10"
-                            HeightRequest="40" />
+                            HeightRequest="50" 
+                            HorizontalOptions="FillAndExpand" />
                 </StackLayout>
             </Frame>
 
-            <!-- ListView -->
+            <!-- List of People -->
             <Label Text="Lista de Personas" 
                    FontSize="20" 
                    FontAttributes="Bold" 
-                   TextColor="Black" />
+                   TextColor="Black" 
+                   HorizontalOptions="Center" />
             <ListView ItemsSource="{Binding People}" 
                       BackgroundColor="White" 
                       SeparatorColor="#90caf9"
@@ -83,20 +93,23 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <Frame CornerRadius="10" Padding="10" Margin="5" BackgroundColor="#e3f2fd" BorderColor="#90caf9">
-                                <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Frame CornerRadius="15" Padding="10" Margin="10" BackgroundColor="#e3f2fd" BorderColor="#90caf9" HasShadow="True">
+                                <StackLayout Orientation="Horizontal" Spacing="15">
                                     <Label Text="{Binding Name}" 
                                            VerticalOptions="Center" 
                                            FontSize="16" 
-                                           TextColor="Black" />
-                                    <Button Text="Eliminar"
+                                           TextColor="Black" 
+                                           HorizontalOptions="StartAndExpand" />
+                                    <Button Text="Eliminar" 
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainPageViewModel}}, Path=DeletePersonCommand}"
                                             CommandParameter="{Binding .}"
-                                            BackgroundColor="#d32f2f" 
+                                            BackgroundColor="#e53935" 
                                             TextColor="White" 
-                                            CornerRadius="10"
-                                            HeightRequest="30" 
-                                            HorizontalOptions="EndAndExpand" />
+                                            CornerRadius="20" 
+                                            HeightRequest="40" 
+                                            HorizontalOptions="End"
+                                            WidthRequest="100"
+                                            Padding="5,0" />
                                 </StackLayout>
                             </Frame>
                         </ViewCell>
