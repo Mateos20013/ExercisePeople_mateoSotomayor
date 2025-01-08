@@ -1,4 +1,5 @@
 ﻿using People.Models;
+using People.ViewModels;
 using System.Collections.Generic;
 
 namespace People;
@@ -9,7 +10,8 @@ public partial class MainPage : ContentPage
 	public MainPage()
 	{
 		InitializeComponent();
-	}
+        BindingContext = new MainPageViewModel();
+    }
 
     public async void OnNewButtonClicked(object sender, EventArgs args)
     {

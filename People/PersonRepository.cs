@@ -65,4 +65,18 @@ public class PersonRepository
 
         return new List<Person>();
     }
+
+    public async Task DeletePerson(Person person)
+    {
+        try
+        {
+            await Init();
+            await conn.DeleteAsync(person);
+            StatusMessage = $"Person {person.Name} deleted successfully.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to delete person. Error: {ex.Message}";
+        }
+    }
 }
