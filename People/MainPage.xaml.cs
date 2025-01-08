@@ -1,32 +1,23 @@
-﻿using People.Models;
-using People.ViewModels;
-using System.Collections.Generic;
+﻿using People.ViewModels;
 
 namespace People;
 
 public partial class MainPage : ContentPage
 {
+    private readonly MainPageViewModel _viewModel;
 
-	public MainPage()
-	{
-		InitializeComponent();
-        BindingContext = new MainPageViewModel();
+    public MainPage()
+    {
+        InitializeComponent();
+
+        string dbPath = Path.Combine(FileSystem.AppDataDirectory, "people.db3");
+        _viewModel = new MainPageViewModel(dbPath);
+        BindingContext = _viewModel;
     }
 
-    public async void OnNewButtonClicked(object sender, EventArgs args)
+    protected override async void OnAppearing()
     {
-        statusMessage.Text = "";
-
-        await App.PersonRepo.AddNewPerson(newPerson.Text);
-        statusMessage.Text = App.PersonRepo.StatusMessage;
-    }
-
-    public async void OnGetButtonClicked(object sender, EventArgs args)
-    {
-        statusMessage.Text = "";
-
-        List<Person> people = await App.PersonRepo.GetAllPeople();
-        peopleList.ItemsSource = people;
+        base.OnAppearing();
+        await _viewModel.LoadPeople();
     }
 }
-

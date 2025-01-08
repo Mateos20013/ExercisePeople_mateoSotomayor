@@ -1,70 +1,99 @@
 ﻿using People.Models;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using Xamarin.Forms;
 
-namespace People.ViewModels
+namespace People.ViewModels;
+
+public class MainPageViewModel : BaseViewModel
 {
-    public class MainPageViewModel : INotifyPropertyChanged
+    public ObservableCollection<Person> PeopleList { get; set; } = new ObservableCollection<Person>();
+    private readonly PersonRepository _repository;
+
+    public Command AddPersonCommand { get; }
+    public Command<Person> DeletePersonCommand { get; }
+
+    private string _newPersonName;
+    public string NewPersonName
     {
-        private readonly PersonRepository _repository;
+        get => _newPersonName;
+        set => SetProperty(ref _newPersonName, value); // Usa SetProperty del BaseViewModel
+    }
 
-        public ObservableCollection<Person> People { get; set; }
-        public string NewPersonName { get; set; }
-        public ICommand AddPersonCommand { get; }
-        public ICommand DeletePersonCommand { get; }
+    // Constructor con parámetro (usado por MauiProgram.cs)
+    public MainPageViewModel(string dbPath)
+    {
+        _repository = new PersonRepository(dbPath);
 
-        public MainPageViewModel(string dbPath)
+        AddPersonCommand = new Command(async () => await AddPerson());
+        DeletePersonCommand = new Command<Person>(async (person) => await DeletePerson(person));
+    }
+
+    // Constructor predeterminado (necesario para soporte XAML)
+    public MainPageViewModel() : this(Path.Combine(FileSystem.AppDataDirectory, "people.db3"))
+    {
+    }
+
+    // Cargar la lista de personas
+    public async Task LoadPeople()
+    {
+        var people = await _repository.GetAllPeople();
+        PeopleList.Clear();
+        foreach (var person in people)
         {
-            _repository = new PersonRepository(dbPath);
-            People = new ObservableCollection<Person>();
-            AddPersonCommand = new Command(async () => await AddPerson());
-            DeletePersonCommand = new Command<Person>(async (person) => await DeletePerson(person));
-            LoadPeople();
+            PeopleList.Add(person);
+        }
+    }
+
+    // Agregar una nueva persona
+    private async Task AddPerson()
+    {
+        if (string.IsNullOrWhiteSpace(NewPersonName))
+        {
+            await App.Current.MainPage.DisplayAlert("Error", "El nombre no puede estar vacío.", "OK");
+            return;
         }
 
-        private async void LoadPeople()
+        try
         {
-            var people = await _repository.GetAllPeople();
-            People.Clear();
-            foreach (var person in people)
-            {
-                People.Add(person);
-            }
-        }
-
-        private async Task AddPerson()
-        {
-            if (string.IsNullOrEmpty(NewPersonName))
-                return;
-
             await _repository.AddNewPerson(NewPersonName);
-            LoadPeople();
             NewPersonName = string.Empty;
-            OnPropertyChanged(nameof(NewPersonName));
+            await LoadPeople();
         }
-
-        private async Task DeletePerson(Person person)
+        catch (Exception ex)
         {
-            if (person == null)
-                return;
-
-            await _repository.DeletePerson(person);
-            LoadPeople();
-            await Application.Current.MainPage.DisplayAlert(
-                "Registro Eliminado",
-                $"{person.Name} acaba de eliminar un registro.",
-                "OK");
+            await App.Current.MainPage.DisplayAlert("Error", $"No se pudo agregar la persona: {ex.Message}", "OK");
         }
+    }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+    // Eliminar una persona
+    private async Task DeletePerson(Person person)
+    {
+        if (person == null)
+            return;
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        bool isConfirmed = await App.Current.MainPage.DisplayAlert(
+            "Confirmar Eliminación",
+            $"¿Estás seguro de que deseas eliminar a {person.Name}?",
+            "Sí",
+            "No");
+
+        if (isConfirmed)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            try
+            {
+                await _repository.DeletePerson(person);
+                await LoadPeople();
+
+                // Mensaje de eliminación
+                await App.Current.MainPage.DisplayAlert(
+                    "Registro Eliminado",
+                    $"Mateo Sotomayor acaba de eliminar a {person.Name}.",
+                    "OK");
+            }
+            catch (Exception ex)
+            {
+                await App.Current.MainPage.DisplayAlert("Error", $"No se pudo eliminar a la persona: {ex.Message}", "OK");
+            }
         }
     }
 }

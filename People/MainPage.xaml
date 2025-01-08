@@ -1,39 +1,108 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:model="clr-namespace:People.Models"
-             x:Class="People.MainPage" 
-             BackgroundColor="{DynamicResource Light}">
+             xmlns:vm="clr-namespace:People.ViewModels"
+             x:Class="People.MainPage"
+             Title="Mateo Sotomayor"
+             BackgroundColor="#e3f2fd">
 
-    <Grid Padding="5" RowSpacing="5" ColumnSpacing="5"
-          RowDefinitions="Auto,Auto,Auto,Auto,*">
+    <ContentPage.BindingContext>
+        <vm:MainPageViewModel />
+    </ContentPage.BindingContext>
 
-        <Entry x:Name="newPerson"
-           Placeholder="Enter name" />
+    <ScrollView>
 
-        <Button Text="Add Person"
-            Grid.Row="1"
-            Clicked="OnNewButtonClicked" />
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <!-- Header -->
+            <Label Text="Mateo Sotomayor" 
+               FontSize="28" 
+               FontAttributes="Bold" 
+               TextColor="Black"
+               HorizontalOptions="Center" />
+            <Label Text="App para agregar Personas" 
+               FontSize="22" 
+               FontAttributes="Bold" 
+               TextColor="Black"
+               HorizontalOptions="Center" />
 
-        <Label x:Name="statusMessage"
-           TextColor="{StaticResource Primary}"
-           Grid.Row="2" />
+            <!-- Card -->
+            <Frame Padding="15" 
+                   Margin="0,10" 
+                   CornerRadius="20" 
+                   BackgroundColor="#bbdefb"
+                   BorderColor="#90caf9"
+                   HasShadow="True">
+                <StackLayout>
+                    <Label Text="Mateo Sotomayor" 
+                           FontSize="20" 
+                           FontAttributes="Bold" 
+                           TextColor="Black"
+                           HorizontalOptions="Center" />
+                    <Label Text="Edad: 22" 
+                           FontSize="16" 
+                           TextColor="Black"
+                           HorizontalOptions="Center" />
+                    <Image Source="dotnet_bot" 
+                           HeightRequest="200" 
+                           WidthRequest="200" 
+                           HorizontalOptions="Center" 
+                           Aspect="AspectFill" />
+                </StackLayout>
+            </Frame>
 
-        <Button Text="Get All People"
-            Grid.Row="3"
-            Clicked="OnGetButtonClicked" />
+            <!-- Add Person Section -->
+            <Frame Padding="10" Margin="0,10" CornerRadius="15" BackgroundColor="#e3f2fd" BorderColor="#90caf9">
+                <StackLayout Spacing="10">
+                    <Label Text="Agregar Nueva Persona" 
+                           FontSize="18" 
+                           FontAttributes="Bold" 
+                           TextColor="Black" />
+                    <Entry Placeholder="Ingresa el nombre" 
+                           Text="{Binding NewPersonName}" 
+                           BackgroundColor="White" 
+                           PlaceholderColor="Gray"
+                           TextColor="Black" />
+                    <Button Text="Agregar Persona" 
+                            Command="{Binding AddPersonCommand}" 
+                            BackgroundColor="#1e88e5" 
+                            TextColor="White" 
+                            CornerRadius="10"
+                            HeightRequest="40" />
+                </StackLayout>
+            </Frame>
 
-        <CollectionView x:Name="peopleList" Grid.Row="4">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="model:Person">
-                    <Grid ColumnDefinitions="*,2*">
-                        <Label Text="{Binding Id}" TextColor="{StaticResource Primary}"/>
-                        <Label Grid.Column="1" Text="{Binding Name}" TextColor="{StaticResource Primary}"/>
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-
-    </Grid>
-
+            <!-- ListView -->
+            <Label Text="Lista de Personas" 
+                   FontSize="20" 
+                   FontAttributes="Bold" 
+                   TextColor="Black" />
+            <ListView ItemsSource="{Binding People}" 
+                      BackgroundColor="White" 
+                      SeparatorColor="#90caf9"
+                      HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Frame CornerRadius="10" Padding="10" Margin="5" BackgroundColor="#e3f2fd" BorderColor="#90caf9">
+                                <StackLayout Orientation="Horizontal" Spacing="10">
+                                    <Label Text="{Binding Name}" 
+                                           VerticalOptions="Center" 
+                                           FontSize="16" 
+                                           TextColor="Black" />
+                                    <Button Text="Eliminar"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainPageViewModel}}, Path=DeletePersonCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#d32f2f" 
+                                            TextColor="White" 
+                                            CornerRadius="10"
+                                            HeightRequest="30" 
+                                            HorizontalOptions="EndAndExpand" />
+                                </StackLayout>
+                            </Frame>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
